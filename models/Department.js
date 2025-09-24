@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Department.associate = (models) => {
     Department.belongsTo(models.Teacher, { foreignKey: 'headId', as: 'head' });
-    Department.hasMany(models.Course, { foreignKey: 'departmentId', as: 'courses' });
+
     Department.hasMany(models.Student, { foreignKey: 'departmentId', as: 'students' });
     Department.hasMany(models.Teacher, { foreignKey: 'departmentId', as: 'teachers' });
     Department.hasMany(models.GuestTeacher, { foreignKey: 'departmentId', as: 'guestTeachers' });

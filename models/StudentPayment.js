@@ -59,9 +59,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'student_payments',
     indexes: [
-      { fields: ['studentId', 'status'] },
-      { fields: ['paymentType'] },
-      { fields: ['dueDate'] }
+      { fields: ['student_id', 'status'] },
+      { fields: ['payment_type'] },
+      { fields: ['due_date'] }
     ]
   });
 

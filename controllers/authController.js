@@ -134,7 +134,7 @@ class AuthController {
     try {
       const user = await User.findByPk(req.user.userId, {
         include: [
-          { association: 'studentProfile', include: ['department', 'course'] },
+          { association: 'studentProfile', include: ['department'] },
           { association: 'teacherProfile', include: ['department'] },
           { association: 'guestTeacherProfile', include: ['department'] }
         ],

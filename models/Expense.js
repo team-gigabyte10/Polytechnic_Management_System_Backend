@@ -54,10 +54,10 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'expenses',
     indexes: [
-      { fields: ['category', 'expenseDate'] },
-      { fields: ['expenseDate'] },
-      { fields: ['departmentId'] },
-      { fields: ['vendorName'] }
+      { fields: ['category', 'expense_date'] },
+      { fields: ['expense_date'] },
+      { fields: ['department_id'] },
+      { fields: ['vendor_name'] }
     ]
   });
 

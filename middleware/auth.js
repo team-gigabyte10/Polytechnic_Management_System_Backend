@@ -26,7 +26,12 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    req.user = decoded;
+    // Set req.user with both JWT payload and database user info
+    req.user = {
+      ...decoded,
+      role: user.role,
+      email: user.email
+    };
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
@@ -59,10 +64,33 @@ const authorize = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    // Flatten the roles array to handle nested arrays
+    const flatRoles = roles.flat();
+
+    // Debug logging
+    console.log('🔍 Authorization Debug:');
+    console.log('  User ID:', req.user.userId);
+    console.log('  User Role:', req.user.role);
+    console.log('  Original Roles:', roles);
+    console.log('  Flattened Roles:', flatRoles);
+    console.log('  User Role Type:', typeof req.user.role);
+
+    // More robust role checking
+    const userRole = req.user.role ? req.user.role.toString().toLowerCase().trim() : null;
+    const hasRole = flatRoles.some(role => role.toString().toLowerCase().trim() === userRole);
+    
+    if (!hasRole) {
       return res.status(403).json({
         success: false,
-        message: 'Insufficient permissions'
+        message: 'Insufficient permissions',
+        debug: {
+          userRole: req.user.role,
+          userRoleNormalized: userRole,
+          originalRoles: roles,
+          flattenedRoles: flatRoles,
+          userRoleType: typeof req.user.role,
+          hasRole: hasRole
+        }
       });
     }
 

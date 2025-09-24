@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, authorize } = require('../middleware/auth');
-const { User, Student, Teacher, GuestTeacher, Department, Course, Salary, Expense, Attendance, StudentPayment } = require('../models');
+const { User, Student, Teacher, GuestTeacher, Department, Salary, Expense, Attendance, StudentPayment } = require('../models');
 const { Op } = require('sequelize');
 
 // Protect all dashboard routes - only admin
@@ -15,12 +15,11 @@ router.get('/', async (req, res, next) => {
     const dateRange = startDate && endDate ? { [Op.between]: [startDate, endDate] } : undefined;
 
     // Counts
-    const [totalStudents, totalTeachers, totalGuestTeachers, totalDepartments, totalCourses] = await Promise.all([
+    const [totalStudents, totalTeachers, totalGuestTeachers, totalDepartments] = await Promise.all([
       Student.count(),
       Teacher.count(),
       GuestTeacher.count(),
-      Department.count(),
-      Course.count()
+      Department.count()
     ]);
 
     // Financials
@@ -57,8 +56,7 @@ router.get('/', async (req, res, next) => {
           students: totalStudents || 0,
           teachers: totalTeachers || 0,
           guestTeachers: totalGuestTeachers || 0,
-          departments: totalDepartments || 0,
-          courses: totalCourses || 0
+          departments: totalDepartments || 0
         },
         financials: {
           salaries: {

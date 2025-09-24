@@ -8,27 +8,28 @@ const { validate, teacherSchemas } = require('../middleware/validation');
 router.use(authenticateToken);
 
 // Get all teachers - Admin can view; teachers can view list too
-router.get('/', authorize('admin', 'teacher'), teacherController.getAllTeachers);
+router.get('/', authorize(['admin', 'teacher']), teacherController.getAllTeachers);
 
 // Get teacher by ID - Admin and the teacher themselves can view
 router.get('/:id', teacherController.getTeacherById);
 
 // Create new teacher - Only admin can create
 router.post('/', 
-  authorize('admin'), 
+  authorize(['admin']), 
   validate(teacherSchemas.create), 
   teacherController.createTeacher
 );
 
 // Update teacher - Admin and the teacher themselves can update
 router.put('/:id', 
+  authorize(['admin', 'teacher']), 
   validate(teacherSchemas.update), 
   teacherController.updateTeacher
 );
 
 // Delete teacher - Only admin can delete
 router.delete('/:id', 
-  authorize('admin'), 
+  authorize(['admin']), 
   teacherController.deleteTeacher
 );
 

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { User, Student, Teacher, GuestTeacher, Department, Course } = require('../models');
+const { User, Student, Teacher, GuestTeacher, Department } = require('../models');
 
 class UserController {
   async getAllUsers(req, res, next) {
@@ -23,10 +23,10 @@ class UserController {
         include: [
           { 
             association: 'studentProfile',
-            attributes: ['id', 'rollNumber', 'departmentId', 'courseId', 'semester'],
+            attributes: ['id', 'rollNumber', 'departmentId', 'semester'],
             include: [
               { model: Department, as: 'department', attributes: ['id', 'name', 'code'] },
-              { model: Course, as: 'course', attributes: ['id', 'name', 'code'] }
+
             ]
           },
           { 

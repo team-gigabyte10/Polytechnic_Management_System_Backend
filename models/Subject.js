@@ -14,10 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
-    courseId: {
+    departmentId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: 'course_id'
+      field: 'department_id'
     },
     semester: {
       type: DataTypes.INTEGER,
@@ -44,15 +44,15 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'subjects',
     indexes: [
-      { fields: ['courseId', 'semester'] },
+      { fields: ['department_id', 'semester'] },
       { fields: ['code'] },
       { fields: ['credits'] }
     ]
   });
 
   Subject.associate = (models) => {
-    Subject.belongsTo(models.Course, { foreignKey: 'courseId', as: 'course' });
-    Subject.hasMany(models.Class, { foreignKey: 'subjectId', as: 'classes' });
+    Subject.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
+    Subject.hasMany(models.ClassSchedule, { foreignKey: 'subjectId', as: 'classSchedules' });
     Subject.hasMany(models.Mark, { foreignKey: 'subjectId', as: 'marks' });
   };
 

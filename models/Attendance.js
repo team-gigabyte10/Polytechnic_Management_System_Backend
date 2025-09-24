@@ -5,10 +5,10 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    classId: {
+    classScheduleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      field: 'class_id'
+      field: 'class_schedule_id'
     },
     studentId: {
       type: DataTypes.INTEGER,
@@ -36,14 +36,14 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'attendance',
     indexes: [
-      { fields: ['studentId', 'date'] },
-      { fields: ['classId', 'date'] },
-      { unique: true, fields: ['classId', 'studentId', 'date'] }
+      { fields: ['student_id', 'date'] },
+      { fields: ['class_schedule_id', 'date'] },
+      { unique: true, fields: ['class_schedule_id', 'student_id', 'date'] }
     ]
   });
 
   Attendance.associate = (models) => {
-    Attendance.belongsTo(models.Class, { foreignKey: 'classId', as: 'class' });
+    Attendance.belongsTo(models.ClassSchedule, { foreignKey: 'classScheduleId', as: 'classSchedule' });
     Attendance.belongsTo(models.Student, { foreignKey: 'studentId', as: 'student' });
     Attendance.belongsTo(models.User, { foreignKey: 'markedBy', as: 'markedByUser' });
   };

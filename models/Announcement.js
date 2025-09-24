@@ -44,9 +44,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'announcements',
     indexes: [
-      { fields: ['targetAudience'] },
-      { fields: ['createdAt'] },
-      { fields: ['expiresAt'] }
+      { fields: ['target_audience'] },
+      { fields: ['created_at'] },
+      { fields: ['expires_at'] }
     ]
   });
 

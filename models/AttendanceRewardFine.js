@@ -37,8 +37,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     tableName: 'attendance_rewards_fines',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     indexes: [
-      { fields: ['studentId', 'month'] },
+      { fields: ['student_id', 'month'] },
       { fields: ['type'] }
     ]
   });

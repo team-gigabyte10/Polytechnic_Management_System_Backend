@@ -1,4 +1,4 @@
-const { Teacher, User, Department, Class, Salary } = require('../models');
+const { Teacher, User, Department, ClassSchedule, Salary } = require('../models');
 const { Op } = require('sequelize');
 
 class TeacherController {
@@ -126,6 +126,49 @@ class TeacherController {
         return res.status(404).json({ success: false, message: 'Teacher not found' });
       }
 
+      // Check if user is trying to update their own profile or is admin
+      const isAdmin = req.user.role === 'admin';
+      const isOwnProfile = req.user.userId === teacher.userId;
+      
+      if (!isAdmin && !isOwnProfile) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You can only update your own profile' 
+        });
+      }
+
+      // Check if employeeId is being changed and if it already exists
+      if (teacherData && teacherData.employeeId && teacherData.employeeId !== teacher.employeeId) {
+        const existingTeacher = await Teacher.findOne({ 
+          where: { 
+            employeeId: teacherData.employeeId,
+            id: { [Op.ne]: id }
+          } 
+        });
+        if (existingTeacher) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Employee ID already exists' 
+          });
+        }
+      }
+
+      // Check if email is being changed and if it already exists
+      if (userData && userData.email && userData.email !== teacher.user.email) {
+        const existingUser = await User.findOne({ 
+          where: { 
+            email: userData.email,
+            id: { [Op.ne]: teacher.userId }
+          } 
+        });
+        if (existingUser) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Email already exists' 
+          });
+        }
+      }
+
       // Update user data if provided
       if (userData) {
         await User.update(userData, { where: { id: teacher.userId } });
@@ -136,7 +179,19 @@ class TeacherController {
         await Teacher.update(teacherData, { where: { id } });
       }
 
-      res.json({ success: true, message: 'Teacher updated successfully' });
+      // Fetch updated teacher data
+      const updatedTeacher = await Teacher.findByPk(id, {
+        include: [
+          { model: User, as: 'user', attributes: ['name', 'email', 'role', 'isActive'] },
+          { model: Department, as: 'department', attributes: ['name', 'code'] }
+        ]
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Teacher updated successfully',
+        data: { teacher: updatedTeacher }
+      });
     } catch (error) {
       next(error);
     }
@@ -152,7 +207,28 @@ class TeacherController {
         return res.status(404).json({ success: false, message: 'Teacher not found' });
       }
 
-      // Delete user (teacher will be deleted due to cascade if configured)
+      // Check if teacher has class schedules assigned
+      const classScheduleCount = await ClassSchedule.count({ where: { teacherId: id } });
+      if (classScheduleCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete teacher. ${classScheduleCount} class schedule(s) are assigned to this teacher.`
+        });
+      }
+
+      // Check if teacher is a department head
+      const departmentCount = await Department.count({ where: { headId: id } });
+      if (departmentCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete teacher. This teacher is the head of ${departmentCount} department(s).`
+        });
+      }
+
+      // Delete teacher record first (to avoid foreign key constraints)
+      await Teacher.destroy({ where: { id } });
+      
+      // Delete user record
       await User.destroy({ where: { id: teacher.userId } });
 
       res.json({ success: true, message: 'Teacher deleted successfully' });
@@ -162,4 +238,13 @@ class TeacherController {
   }
 }
 
-module.exports = new TeacherController();
+const controller = new TeacherController();
+
+// Bind methods to preserve 'this' context
+module.exports = {
+  getAllTeachers: controller.getAllTeachers.bind(controller),
+  getTeacherById: controller.getTeacherById.bind(controller),
+  createTeacher: controller.createTeacher.bind(controller),
+  updateTeacher: controller.updateTeacher.bind(controller),
+  deleteTeacher: controller.deleteTeacher.bind(controller)
+};

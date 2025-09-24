@@ -1,24 +1,24 @@
-const { Student, User, Department, Course, Attendance, Mark, StudentPayment } = require('../models');
+const { Student, User, Department, Attendance, Mark, StudentPayment } = require('../models');
 const { Op } = require('sequelize');
 
 class StudentController {
   // Get all students
   async getAllStudents(req, res, next) {
     try {
-      const { page = 1, limit = 10, department, semester, course } = req.query;
+      const { page = 1, limit = 10, department, semester } = req.query;
       const offset = (page - 1) * limit;
 
       const where = {};
       if (department) where.departmentId = department;
       if (semester) where.semester = semester;
-      if (course) where.courseId = course;
+
 
       const { count, rows } = await Student.findAndCountAll({
         where,
         include: [
           { model: User, as: 'user', attributes: ['name', 'email', 'isActive'] },
           { model: Department, as: 'department', attributes: ['name', 'code'] },
-          { model: Course, as: 'course', attributes: ['name', 'code'] }
+
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -55,7 +55,7 @@ class StudentController {
             attributes: ['name', 'email', 'isActive', 'createdAt'] 
           },
           { model: Department, as: 'department' },
-          { model: Course, as: 'course' },
+
           {
             model: Attendance,
             as: 'attendances',
@@ -153,7 +153,7 @@ class StudentController {
         include: [
           { model: User, as: 'user', attributes: ['name', 'email', 'role'] },
           { model: Department, as: 'department', attributes: ['name', 'code'] },
-          { model: Course, as: 'course', attributes: ['name', 'code'] }
+
         ]
       });
 
@@ -184,6 +184,49 @@ class StudentController {
         });
       }
 
+      // Check if user is trying to update their own profile or is admin
+      const isAdmin = req.user.role === 'admin';
+      const isOwnProfile = req.user.userId === student.userId;
+      
+      if (!isAdmin && !isOwnProfile) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You can only update your own profile' 
+        });
+      }
+
+      // Check if roll number is being changed and if it already exists
+      if (studentData && studentData.rollNumber && studentData.rollNumber !== student.rollNumber) {
+        const existingStudent = await Student.findOne({ 
+          where: { 
+            rollNumber: studentData.rollNumber,
+            id: { [Op.ne]: id }
+          } 
+        });
+        if (existingStudent) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Roll number already exists' 
+          });
+        }
+      }
+
+      // Check if email is being changed and if it already exists
+      if (userData && userData.email && userData.email !== student.user.email) {
+        const existingUser = await User.findOne({ 
+          where: { 
+            email: userData.email,
+            id: { [Op.ne]: student.userId }
+          } 
+        });
+        if (existingUser) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Email already exists' 
+          });
+        }
+      }
+
       // Update user data if provided
       if (userData) {
         await User.update(userData, { where: { id: student.userId } });
@@ -194,9 +237,19 @@ class StudentController {
         await Student.update(studentData, { where: { id } });
       }
 
+      // Fetch updated student data
+      const updatedStudent = await Student.findByPk(id, {
+        include: [
+          { model: User, as: 'user', attributes: ['name', 'email', 'role', 'isActive'] },
+          { model: Department, as: 'department', attributes: ['name', 'code'] },
+
+        ]
+      });
+
       res.json({
         success: true,
-        message: 'Student updated successfully'
+        message: 'Student updated successfully',
+        data: { student: updatedStudent }
       });
     } catch (error) {
       next(error);
@@ -219,7 +272,37 @@ class StudentController {
         });
       }
 
-      // Delete user (student will be deleted due to cascade)
+      // Check if student has attendance records
+      const attendanceCount = await Attendance.count({ where: { studentId: id } });
+      if (attendanceCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete student. ${attendanceCount} attendance record(s) exist for this student.`
+        });
+      }
+
+      // Check if student has marks
+      const marksCount = await Mark.count({ where: { studentId: id } });
+      if (marksCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete student. ${marksCount} mark record(s) exist for this student.`
+        });
+      }
+
+      // Check if student has payment records
+      const paymentCount = await StudentPayment.count({ where: { studentId: id } });
+      if (paymentCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete student. ${paymentCount} payment record(s) exist for this student.`
+        });
+      }
+
+      // Delete student record first (to avoid foreign key constraints)
+      await Student.destroy({ where: { id } });
+      
+      // Delete user record
       await User.destroy({ where: { id: student.userId } });
 
       res.json({
@@ -327,4 +410,15 @@ class StudentController {
   }
 }
 
-module.exports = new StudentController();
+const controller = new StudentController();
+
+// Bind methods to preserve 'this' context
+module.exports = {
+  getAllStudents: controller.getAllStudents.bind(controller),
+  getStudentById: controller.getStudentById.bind(controller),
+  createStudent: controller.createStudent.bind(controller),
+  updateStudent: controller.updateStudent.bind(controller),
+  deleteStudent: controller.deleteStudent.bind(controller),
+  getAttendanceSummary: controller.getAttendanceSummary.bind(controller),
+  getPaymentHistory: controller.getPaymentHistory.bind(controller)
+};

@@ -69,9 +69,9 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'salaries',
     indexes: [
       { fields: ['month'] },
-      { fields: ['isPaid'] },
-      { unique: true, fields: ['teacherId', 'month'] },
-      { unique: true, fields: ['guestTeacherId', 'month'] }
+      { fields: ['is_paid'] },
+      { unique: true, fields: ['teacher_id', 'month'] },
+      { unique: true, fields: ['guest_teacher_id', 'month'] }
     ],
     validate: {
       teacherXorGuestTeacher() {

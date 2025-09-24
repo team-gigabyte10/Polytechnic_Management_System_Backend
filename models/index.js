@@ -4,12 +4,12 @@ const { DataTypes } = require('sequelize');
 // Import all models
 const User = require('./User');
 const Department = require('./Department');
-const Course = require('./Course');
+
 const Student = require('./Student');
 const Teacher = require('./Teacher');
 const GuestTeacher = require('./GuestTeacher');
 const Subject = require('./Subject');
-const Class = require('./Class');
+const ClassSchedule = require('./ClassSchedule');
 const Attendance = require('./Attendance');
 const Mark = require('./Mark');
 const Announcement = require('./Announcement');
@@ -23,12 +23,12 @@ const TeachingSession = require('./TeachingSession');
 const models = {
   User: User(sequelize, DataTypes),
   Department: Department(sequelize, DataTypes),
-  Course: Course(sequelize, DataTypes),
+
   Student: Student(sequelize, DataTypes),
   Teacher: Teacher(sequelize, DataTypes),
   GuestTeacher: GuestTeacher(sequelize, DataTypes),
   Subject: Subject(sequelize, DataTypes),
-  Class: Class(sequelize, DataTypes),
+  ClassSchedule: ClassSchedule(sequelize, DataTypes),
   Attendance: Attendance(sequelize, DataTypes),
   Mark: Mark(sequelize, DataTypes),
   Announcement: Announcement(sequelize, DataTypes),

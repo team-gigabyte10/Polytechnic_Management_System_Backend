@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
   Teacher.associate = (models) => {
     Teacher.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Teacher.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
-    Teacher.hasMany(models.Class, { foreignKey: 'teacherId', as: 'classes' });
+    Teacher.hasMany(models.ClassSchedule, { foreignKey: 'teacherId', as: 'classSchedules' });
     Teacher.hasMany(models.Salary, { foreignKey: 'teacherId', as: 'salaries' });
     Teacher.hasOne(models.Department, { foreignKey: 'headId', as: 'headOfDepartment' });
   };

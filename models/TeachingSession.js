@@ -51,14 +51,14 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'teaching_sessions',
     indexes: [
-      { fields: ['guestTeacherId', 'sessionDate'] },
-      { fields: ['classId', 'sessionDate'] }
+      { fields: ['guest_teacher_id', 'session_date'] },
+      { fields: ['class_id', 'session_date'] }
     ]
   });
 
   TeachingSession.associate = (models) => {
     TeachingSession.belongsTo(models.GuestTeacher, { foreignKey: 'guestTeacherId', as: 'guestTeacher' });
-    TeachingSession.belongsTo(models.Class, { foreignKey: 'classId', as: 'class' });
+    TeachingSession.belongsTo(models.ClassSchedule, { foreignKey: 'classScheduleId', as: 'classSchedule' });
   };
 
   return TeachingSession;

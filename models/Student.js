@@ -22,11 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       field: 'department_id'
     },
-    courseId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: 'course_id'
-    },
+
     semester: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -48,6 +44,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(15),
       field: 'guardian_phone'
     },
+    phone: {
+      type: DataTypes.STRING(15),
+      allowNull: true
+    },
+    additionalPhone: {
+      type: DataTypes.STRING(15),
+      field: 'additional_phone',
+      allowNull: true
+    },
     address: {
       type: DataTypes.TEXT
     },
@@ -61,7 +66,7 @@ module.exports = (sequelize, DataTypes) => {
     indexes: [
       { fields: ['roll_number'] },
       { fields: ['department_id', 'semester'] },
-      { fields: ['course_id'] },
+
       { fields: ['admission_year'] }
     ]
   });
@@ -69,7 +74,7 @@ module.exports = (sequelize, DataTypes) => {
   Student.associate = (models) => {
     Student.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Student.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
-    Student.belongsTo(models.Course, { foreignKey: 'courseId', as: 'course' });
+
     Student.hasMany(models.Attendance, { foreignKey: 'studentId', as: 'attendances' });
     Student.hasMany(models.Mark, { foreignKey: 'studentId', as: 'marks' });
     Student.hasMany(models.StudentPayment, { foreignKey: 'studentId', as: 'payments' });
